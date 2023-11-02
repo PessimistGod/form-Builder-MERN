@@ -7,13 +7,14 @@ const sectionRoutes = require('./Routes/Sections')
 const testRoutes = require('./Routes/Tests')
 
 
+
 const app = express();
 
 app.use(express.json());
 
 
 const corsOptions = {
-  origin: ["http://localhost:3000"],
+  origin: ["http://localhost:3000","https://form-builder-frontend-phi.vercel.app"],
   methods: ["POST", "GET", "PUT", "DELETE"],
   credentials: true,
 };
