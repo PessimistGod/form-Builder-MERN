@@ -8,9 +8,24 @@ const TakeTest = () => {
 
   const [testData, setTestData] = useState(null);
   const [userResponses, setUserResponses] = useState([]);
+  const [userName, setUserName] = useState('')
+  const [userEmail, setUserEmail] = useState('')
   
   const [userCategoryResponses, setUserCategoryResponses] = useState({});
   const [clozeResponses, setClozeResponses] = useState([]);
+  const [clozePreview, setClozePreview] = useState([]);
+  const [comprehensionResponses, setComprehensionResponses] = useState([]);
+
+  const [userCategoryData, setUserCategoryData] = useState([]);
+
+  const combinedClozeValues = clozeResponses.map((response, index) => ({
+    preview: clozePreview[index],
+    response,
+  }));
+
+
+  console.log(comprehensionResponses)
+  
 
   useEffect(() => {
     async function fetchTest() {
@@ -18,8 +33,15 @@ const TakeTest = () => {
         const response = await axios.get(`${API_URL}/api/tests/${testId}`);
         if (response.status === 200) {
           setTestData(response.data);
+          
           const initialClozeResponses = new Array(response.data.clozeQuestions.length).fill('');
+           
           setClozeResponses(initialClozeResponses);
+
+          const ClozePreview = response.data.clozeQuestions.map((question) => (
+            question.preview
+          ));
+          setClozePreview(ClozePreview);
         } else {
           // Handle errors
         }
@@ -31,28 +53,110 @@ const TakeTest = () => {
     fetchTest();
   }, [testId, API_URL]);
 
-  const handleMultipleChoiceResponse = (questionIndex, optionIndex) => {
-    const updatedUserResponses = [...userResponses];
-    updatedUserResponses[questionIndex] = optionIndex;
-    setUserResponses(updatedUserResponses);
+  const handleMultipleChoiceResponse = (setIndex, questionIndex, optionIndex) => {
+    const updatedComprehensionResponses = [...comprehensionResponses];
+    if (!updatedComprehensionResponses[setIndex]) {
+      updatedComprehensionResponses[setIndex] = [];
+    }
+    if (!updatedComprehensionResponses[setIndex][questionIndex]) {
+      updatedComprehensionResponses[setIndex][questionIndex] = {};
+    }
+  
+    const questionType = testData.comprehensionQuestions[setIndex][questionIndex].queType;
+    const questionText = testData.comprehensionQuestions[setIndex][questionIndex].text;
+    const optionValue = testData.comprehensionQuestions[setIndex][questionIndex].options[optionIndex];
+  
+    if (questionType === 'MCQ') {
+      updatedComprehensionResponses[setIndex][questionIndex].type = 'MCQ';
+      updatedComprehensionResponses[setIndex][questionIndex].value = optionValue;
+    } else if (questionType === 'MCA') {
+      if (!updatedComprehensionResponses[setIndex][questionIndex].value) {
+        updatedComprehensionResponses[setIndex][questionIndex].value = [];
+      }
+  
+      const value = updatedComprehensionResponses[setIndex][questionIndex].value;
+      const optionValue = testData.comprehensionQuestions[setIndex][questionIndex].options[optionIndex];
+  
+      if (value.includes(optionValue)) {
+        // Option found, remove it from the array
+        value.splice(value.indexOf(optionValue), 1);
+      } else {
+        // Option not found, add it to the array
+        value.push(optionValue);
+      }
+    }
+  
+    setComprehensionResponses(updatedComprehensionResponses);
   };
+  
+  
+  
+  const handleTextInputResponse = (setIndex, questionIndex, textResponse) => {
+    const updatedComprehensionResponses = [...comprehensionResponses];
+    if (!updatedComprehensionResponses[setIndex]) {
+      updatedComprehensionResponses[setIndex] = [];
+    }
+    if (!updatedComprehensionResponses[setIndex][questionIndex]) {
+      updatedComprehensionResponses[setIndex][questionIndex] = {};
+    }
+    updatedComprehensionResponses[setIndex][questionIndex].type = 'Paragraph';
+    updatedComprehensionResponses[setIndex][questionIndex].value = textResponse;
+    setComprehensionResponses(updatedComprehensionResponses);
+  };
+  
 
-  const handleTextInputResponse = (questionIndex, textResponse) => {
-    const updatedUserResponses = [...userResponses];
-    updatedUserResponses[questionIndex] = textResponse;
-    setUserResponses(updatedUserResponses);
-  };
+
+
+
 
   const handleCategoryResponse = (categoryIndex, item, selectedCategoryIndex) => {
     const updatedUserCategoryResponses = { ...userCategoryResponses };
-
+  
     if (!updatedUserCategoryResponses[categoryIndex]) {
       updatedUserCategoryResponses[categoryIndex] = {};
     }
+  
     updatedUserCategoryResponses[categoryIndex][item] = selectedCategoryIndex;
-
+  
+    const updatedUserCategoryData = [];
+  
+    for (let cIndex = 0; cIndex < testData.categories.length; cIndex++) {
+      const category = testData.categories[cIndex];
+      const categoryData = [];
+  
+      for (let subIndex = 0; subIndex < category.categories.length; subIndex++) {
+        const subCategory = category.categories[subIndex];
+  
+        for (let itemIndex = 0; itemIndex < subCategory.items.length; itemIndex++) {
+          const itemName = subCategory.items[itemIndex];
+          const userResponse = updatedUserCategoryResponses[cIndex]
+            ? updatedUserCategoryResponses[cIndex][itemName]
+            : null;
+  
+          if (userResponse) {
+            const [selectedCIndex, selectedSIndex] = userResponse.split('-');
+            const selectedSubCategory = testData.categories[selectedCIndex].categories[selectedSIndex];
+  
+            // Set userResponse to the title of the selected subCategory
+            const itemData = {
+              title: category.formTitle,
+              itemName,
+              userResponse: selectedSubCategory.title,
+            };
+  
+            categoryData.push(itemData);
+          }
+        }
+      }
+  
+      updatedUserCategoryData.push(categoryData);
+    }
+  
+    setUserCategoryData(updatedUserCategoryData);
     setUserCategoryResponses(updatedUserCategoryResponses);
   };
+  
+  
 
   const handleInsertOption = (questionIndex, option) => {
     const updatedClozeResponses = [...clozeResponses];
@@ -68,9 +172,51 @@ const TakeTest = () => {
     setClozeResponses(updatedClozeResponses);
   };
   
+  const submitResponses = async () => {
+    try {
+        const FormData = {
+            userName,
+            userEmail,
+            userCategoryData,
+            combinedClozeValues,
+            userResponses,
+          }
+          console.log(FormData)
+      const response = await axios.post(`${API_URL}/api/submitResponses`, );
+
+      if (response.status === 200) {
+        console.log('Responses submitted successfully');
+        // You can add code to handle successful submission, e.g., redirecting the user or showing a success message.
+      } else {
+        console.log('Failed to submit responses');
+        // Handle submission error
+      }
+    } catch (error) {
+      console.error('Error submitting responses:', error);
+      // Handle network or other errors
+    }
+  };
+
   return (
     <div className="container mx-auto p-4">
       <h1 className="text-3xl font-bold mb-4 text-center">Take Test</h1>
+
+      <div className="flex flex-col md:flex-row items-center justify-center">
+  <input
+    className="px-4 py-2 m-2 border border-gray-300 rounded-md focus:outline-none focus:border-black"
+    type="text"
+    placeholder="Enter your Name"
+    onChange={(e)=>setUserName(e.target.value)}
+  />
+  <input
+    className="px-4 py-2 m-2 border border-gray-300 rounded-md focus:outline-none focus:border-black"
+    type="email"
+    placeholder="Enter your email"
+    onChange={(e)=>setUserEmail(e.target.value)}
+
+  />
+</div>
+
 
       {/* Render categories */}
       {testData && testData.categories && testData.categories.length > 0 ? (
@@ -106,6 +252,7 @@ const TakeTest = () => {
         <p>No categories found.</p>
       )}
 
+{/* Render Cloze */}
 {testData && testData.clozeQuestions && testData.clozeQuestions.length > 0 ? (
   testData.clozeQuestions.map((question, index) => (
     <div key={index} className="my-6">
@@ -234,7 +381,7 @@ const TakeTest = () => {
       <div className="text-center">
         <button
           className="bg-blue-500 text-white px-4 py-2 rounded-md"
-          onClick={() => console.log(userResponses)}
+          onClick={submitResponses}
         >
           Submit
         </button>
