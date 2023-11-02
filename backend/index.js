@@ -14,7 +14,7 @@ app.use(express.json());
 
 
 const corsOptions = {
-  origin: ["http://localhost:3000","https://form-builder-frontend-phi.vercel.app"],
+  origin: ["https://form-builder-frontend-phi.vercel.app","https://form-builder-backend-theta.vercel.app","http://localhost:3000"],
   methods: ["POST", "GET", "PUT", "DELETE"],
   credentials: true,
 };
