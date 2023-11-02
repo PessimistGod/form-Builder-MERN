@@ -7,7 +7,6 @@ const TakeTest = () => {
   const API_URL = process.env.REACT_APP_API_URL;
 
   const [testData, setTestData] = useState(null);
-  const [userResponses, setUserResponses] = useState([]);
   const [userName, setUserName] = useState('')
   const [userEmail, setUserEmail] = useState('')
   
@@ -24,8 +23,6 @@ const TakeTest = () => {
   }));
 
 
-  console.log(comprehensionResponses)
-  
 
   useEffect(() => {
     async function fetchTest() {
@@ -63,7 +60,6 @@ const TakeTest = () => {
     }
   
     const questionType = testData.comprehensionQuestions[setIndex][questionIndex].queType;
-    const questionText = testData.comprehensionQuestions[setIndex][questionIndex].text;
     const optionValue = testData.comprehensionQuestions[setIndex][questionIndex].options[optionIndex];
   
     if (questionType === 'MCQ') {
@@ -73,7 +69,7 @@ const TakeTest = () => {
       if (!updatedComprehensionResponses[setIndex][questionIndex].value) {
         updatedComprehensionResponses[setIndex][questionIndex].value = [];
       }
-  
+      updatedComprehensionResponses[setIndex][questionIndex].type = 'MCA';
       const value = updatedComprehensionResponses[setIndex][questionIndex].value;
       const optionValue = testData.comprehensionQuestions[setIndex][questionIndex].options[optionIndex];
   
@@ -86,9 +82,14 @@ const TakeTest = () => {
       }
     }
   
+    // Add the main question (inputValue) and question text to the response object
+    updatedComprehensionResponses[setIndex][questionIndex].mainQuestion =
+      testData.comprehensionQuestions[setIndex][questionIndex].inputValue;
+    updatedComprehensionResponses[setIndex][questionIndex].questionText =
+      testData.comprehensionQuestions[setIndex][questionIndex].text;
+  
     setComprehensionResponses(updatedComprehensionResponses);
   };
-  
   
   
   const handleTextInputResponse = (setIndex, questionIndex, textResponse) => {
@@ -101,8 +102,16 @@ const TakeTest = () => {
     }
     updatedComprehensionResponses[setIndex][questionIndex].type = 'Paragraph';
     updatedComprehensionResponses[setIndex][questionIndex].value = textResponse;
+    
+    // Add the main question (inputValue) and question text to the response object
+    updatedComprehensionResponses[setIndex][questionIndex].mainQuestion =
+      testData.comprehensionQuestions[setIndex][questionIndex].inputValue;
+    updatedComprehensionResponses[setIndex][questionIndex].questionText =
+      testData.comprehensionQuestions[setIndex][questionIndex].text;
+  
     setComprehensionResponses(updatedComprehensionResponses);
   };
+  
   
 
 
@@ -179,17 +188,16 @@ const TakeTest = () => {
             userEmail,
             userCategoryData,
             combinedClozeValues,
-            userResponses,
+            comprehensionResponses,
+            testId
           }
           console.log(FormData)
-      const response = await axios.post(`${API_URL}/api/submitResponses`, );
+      const response = await axios.post(`${API_URL}/api/user/response`, FormData);
 
-      if (response.status === 200) {
+      if (response.status === 201) {
         console.log('Responses submitted successfully');
-        // You can add code to handle successful submission, e.g., redirecting the user or showing a success message.
       } else {
         console.log('Failed to submit responses');
-        // Handle submission error
       }
     } catch (error) {
       console.error('Error submitting responses:', error);

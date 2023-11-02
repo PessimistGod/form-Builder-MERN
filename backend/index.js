@@ -5,6 +5,7 @@ const port = process.env.PORT || 6000;
 const cors = require('cors');
 const sectionRoutes = require('./Routes/Sections')
 const testRoutes = require('./Routes/Tests')
+const userRoutes = require('./Routes/User')
 
 
 
@@ -29,6 +30,9 @@ app.get('/', (req, res) => {
 
 app.use('/api/sections', sectionRoutes);
 app.use('/api/tests', testRoutes);
+app.use('/api/user', userRoutes);
+
+
 
 
 app.listen(port, () => {
