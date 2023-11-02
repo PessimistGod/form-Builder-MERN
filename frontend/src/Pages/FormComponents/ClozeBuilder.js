@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
-const ClozeBuilder = () => {
+const ClozeBuilder = ({clozeData,setClozeData,index }) => {
 
   
   const [description, setDescription] = useState('');
@@ -8,6 +8,14 @@ const ClozeBuilder = () => {
   const [options, setOptions] = useState([]);
   const [selectedWord, setSelectedWord] = useState('');
   const [newOption, setNewOption] = useState('');
+
+  useEffect(() => {
+    const updatedClozeData = [...clozeData];
+    updatedClozeData[index] = { description, preview, options };
+    setClozeData(updatedClozeData);
+    // eslint-disable-next-line
+  }, [description, preview, options]);
+  
 
   const replaceWordWithBlank = () => {
     if (selectedWord) {

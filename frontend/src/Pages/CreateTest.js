@@ -1,52 +1,55 @@
 import React, { useState } from 'react';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
-import CategoryQuestionBuilder from './FormComponents/CategoryBuilder';
+import CategoryBuilder from './FormComponents/CategoryBuilder';
 import ClozeQuestionBuilder from './FormComponents/ClozeBuilder';
 import ComprehensionQuestionBuilder from './FormComponents/ComprehensionBuilder';
 import axios from 'axios'
+import { useParams } from 'react-router-dom';
 
 const CreateTest = () => {
+  const { testName, SectionId } = useParams();
+  console.log(testName, SectionId)
   const API_URL = process.env.REACT_APP_API_URL;
   const [questions, setQuestions] = useState([]);
   const [addingQuestionType, setAddingQuestionType] = useState('category');
 
+  const [categories, setCategories] = useState([]);
+  const [formTitle, setFormTitle] = useState('');
 
+  const [categoryData, setCategoryData] = useState([]);
+  const [clozeData, setClozeData] = useState([]);
+  const [comprehensionData, setComprehensionData] = useState([]);
+  const [imageURL, setImageURL] = useState('');
+
+
+  
   const saveTest = async () => {
-    try {
-      const newFormData = {};
+    try { 
 
-      newFormData.categories = [];
-      newFormData.clozeQuestions = [];
-      newFormData.comprehensionQuestions = [];
-      
-      questions.forEach((question, index) => {
-        if (question.type === 'category') {
-          newFormData.categories.push(question.data);
-        } else if (question.type === 'cloze') {
-          newFormData.clozeQuestions.push(question.data);
-        } else if (question.type === 'comprehension') {
-          newFormData.comprehensionQuestions.push(question.data);
-        }
-      });
-
+      const newFormData = {
+        testName,
+        imageURL,
+        categories: categoryData.filter((category) => category !== undefined),
+        clozeQuestions: clozeData.filter((question) => question !== undefined),
+        comprehensionQuestions: comprehensionData.filter((questions) => questions !== undefined),
+        SectionId
+      };
       
       const response = await axios.post(`${API_URL}/api/tests`, newFormData);
-      
+
       console.log('Test created:', response.data);
     } catch (error) {
       console.error('Failed to create the test:', error);
     }
   };
-  
-  
 
   const addQuestion = () => {
     let initialData = null;
-  
+
     if (addingQuestionType === 'category') {
-      initialData ={
+      initialData = {
         type: 'category',
-        title: '', 
+        title: '',
         category: '',
         items: [],
       };
@@ -62,23 +65,23 @@ const CreateTest = () => {
         type: 'comprehension',
         queType: '',
         data: {
+          inputValue : '',
           image: '',
-          questionText: 'text',
+          questionText: '',
           options: [],
           correctOptions: [],
           points: 1,
-        },
+        }
       };
     }
-  
+
     const newQuestion = {
       type: addingQuestionType,
       data: initialData,
     };
-  
+
     setQuestions([...questions, newQuestion]);
   };
-  
 
   const removeQuestion = (index) => {
     const updatedQuestions = [...questions];
@@ -88,18 +91,16 @@ const CreateTest = () => {
 
   const updateQuestionData = (index, data) => {
     const updatedQuestions = [...questions];
-    console.log(updatedQuestions[index].data, updatedQuestions, data, index)
     updatedQuestions[index].data = data;
     setQuestions(updatedQuestions);
-   
   };
 
   const changeQuestionType = (index, type) => {
     const updatedQuestions = [...questions];
     if (updatedQuestions[index].data === null) {
-      updatedQuestions[index].data = {}; // Initialize data if it's null
+      updatedQuestions[index].data = {};
     }
-    updatedQuestions[index].data.type = type; // Update the type in data
+    updatedQuestions[index].data.type = type;
     setQuestions(updatedQuestions);
   };
 
@@ -113,9 +114,30 @@ const CreateTest = () => {
     setQuestions(updatedQuestions);
   };
 
+  const updateCategories = (index, updatedCategories) => {
+    const updatedCategoryState = [...categories];
+    updatedCategoryState[index] = updatedCategories;
+    setCategories(updatedCategoryState);
+  };
+
+  const updateComprehensionData = (index, updatedData) => {
+    const updatedComprehensionState = [...comprehensionData];
+    updatedComprehensionState[index] = updatedData;
+    setComprehensionData(updatedComprehensionState);
+  };
   return (
     <div className="container mx-auto p-4">
       <h1 className="text-3xl font-bold mb-4 text-center">Test Question Builder</h1>
+    <div className='flex justify-center items-center my-8'>
+        <label className="font-bold">Test Logo Url:</label>
+        <input
+          type="text"
+          value={imageURL}
+          onChange={(e) => setImageURL(e.target.value)}
+          className="w-64 p-2 border rounded outline-none mx-2"
+        />
+        {imageURL && <div className='w-8 h-8 rounded-full'><img className='rounded-full object-contain' src={imageURL} alt="" /></div>}
+      </div>
       <DragDropContext onDragEnd={onDragEnd}>
         <Droppable droppableId="questions">
           {(provided) => (
@@ -125,7 +147,7 @@ const CreateTest = () => {
               className="space-y-4"
             >
               {questions.map((question, index) => (
-                <Draggable key={index} draggableId={index.toString()} index={index}>
+                <Draggable key={index} index={index}>
                   {(provided) => (
                     <li
                       ref={provided.innerRef}
@@ -149,23 +171,38 @@ const CreateTest = () => {
                       </div>
                       <div>
                         {question.data?.type === 'category' && (
-                          <CategoryQuestionBuilder
-                          question={question.data}
-                          updateQuestionData={(data) => updateQuestionData(index, data)}
+                          <CategoryBuilder
+                          key={index}
+                            categories={categories}
+                            setCategories={(updatedCategories) => updateCategories(index, updatedCategories)}
+                            formTitle={formTitle}
+                            setFormTitle={setFormTitle}
+                            index={index}
+                            data={categoryData[index] || { formTitle: '', categories: [] }}
+                            updateData={(updatedData) => {
+                              const updatedCategoryData = [...categoryData];
+                              updatedCategoryData[index] = updatedData;
+                              setCategoryData(updatedCategoryData);
+                            }}
                           />
-                          )
-                        }
+                        )}
                         {question.data?.type === 'cloze' && (
                           <ClozeQuestionBuilder
                             question={question.data}
                             updateQuestionData={(data) => updateQuestionData(index, data)}
+                            clozeData={clozeData} setClozeData={setClozeData}
+                            index={index}
                           />
                         )}
                         {question.data?.type === 'comprehension' && (
-                          <ComprehensionQuestionBuilder
-                            question={question.data}
-                            updateQuestionData={(data) => updateQuestionData(index, data)}
-                          />
+                        <ComprehensionQuestionBuilder
+                        question={question.data}
+                        updateQuestionData={(data) => updateQuestionData(index, data)}
+                        comprehensionIndex={index}
+                        setComprehensionData={setComprehensionData}
+                        updateComprehensiveData={(updateComprehensiveData) => updateComprehensionData(index, updateComprehensiveData)}
+                      />
+                      
                         )}
                       </div>
                       <button onClick={() => removeQuestion(index)} className="text-red-600 mt-2">
@@ -188,8 +225,8 @@ const CreateTest = () => {
             addingQuestionType === 'category'
               ? 'bg-blue-500 text-white'
               : 'bg-gray-300 text-gray-700'
-          } py-2 px-4 rounded ml-2`
-        }>
+          } py-2 px-4 rounded ml-2`}
+        >
           Category Question
         </button>
         <button
@@ -198,8 +235,8 @@ const CreateTest = () => {
             addingQuestionType === 'cloze'
               ? 'bg-blue-500 text-white'
               : 'bg-gray-300 text-gray-700'
-          } py-2 px-4 rounded ml-2`
-        }>
+          } py-2 px-4 rounded ml-2`}
+        >
           Cloze Question
         </button>
         <button
@@ -208,8 +245,8 @@ const CreateTest = () => {
             addingQuestionType === 'comprehension'
               ? 'bg-blue-500 text-white'
               : 'bg-gray-300 text-gray-700'
-          } py-2 px-4 rounded ml-2`
-        }>
+          } py-2 px-4 rounded ml-2`}
+        >
           Comprehension Question
         </button>
         <button onClick={addQuestion} className="bg-blue-500 text-white py-2 px-4 rounded ml-2">

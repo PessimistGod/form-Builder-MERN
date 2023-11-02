@@ -1,0 +1,96 @@
+  const testData = {
+    categories: [
+      {
+        formTitle: '',
+        categories: [
+          {
+            title: 'Country',
+            items: ['India','Europe','Africa','Japan],
+          },
+          {
+            title: 'City',
+            items: ['Bengaluru','Delhi'],
+          },
+        ],
+      },
+      {
+        formTitle: 'Match the following',
+        categories: [
+          {
+            title: 'Water',
+            items: ['shark'],
+          },
+          {
+            title: 'Land',
+            items: ['Human'],
+          },
+        ],
+      },
+    ],
+    clozeQuestions: [
+      {
+        description: 'Who is the fastest person in the world usain<br>',
+        preview: 'Who is the fastest person in the world _____<br>',
+        options: ['usain', 'rahul', 'milkha'],
+      },
+      {
+        description: 'damodar is a good person<br>',
+        preview: 'damodar is _____ person<br>',
+        options: ['good', 'bad', 'hungry'],
+      },
+      {
+        description: 'The destruction is at home<br>',
+        preview: 'The _____ is at home<br>',
+        options: ['destruction', 'construction'],
+      },
+    ],
+    comprehensionQuestions: [
+      [
+        {
+          queType: 'MCQ',
+          inputValue: 'https://source.unsplash.com/random/200x200?sig=1',
+          textType: 'image',
+          options: ['Apple is Red', 'Apple is Blue', 'Apple is poisoned'],
+          correctOptions: [1],
+          points: 50,
+          text: 'After checking the image, check the right option',
+        },
+        {
+          queType: 'Paragraph',
+          inputValue: 'https://source.unsplash.com/random/200x200?sig=1',
+          textType: 'image',
+          correctOptions: [0],
+          points: 50,
+          text: 'Who was the owner of apple town',
+        },
+        {
+          queType: 'MCA',
+          inputValue: 'https://source.unsplash.com/random/200x200?sig=1',
+          textType: 'image',
+          options: ['poison', 'apple', 'happiness'],
+          correctOptions: [1, 0],
+          points: 50,
+          text: 'Apple Town is filled with',
+        },
+      ],
+      [
+        {
+          queType: 'MCQ',
+          inputValue: 'World is filled with greed',
+          textType: 'text',
+          options: ['World', 'Your Country', 'Gpt'],
+          correctOptions: [0],
+          points: 20,
+          text: 'What is filled with greed',
+        },
+        {
+          queType: 'Paragraph',
+          inputValue: 'World is filled with greed',
+          textType: 'text',
+          correctOptions: [0],
+          points: 50,
+          text: 'State 100 words about the world',
+        },
+      ],
+    ],
+  };

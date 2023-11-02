@@ -1,79 +1,46 @@
 const mongoose = require('mongoose');
 
-// Schema for options
-const OptionSchema = new mongoose.Schema({
-  text: {
-    type: String,
-    required: true,
-  },
-  isCorrect: {
-    type: Boolean,
-    default: false,
-  },
-});
-
-// Schema for categories
-const CategorySchema = new mongoose.Schema({
-  title:{
-    type : String,
-    required: true
-  },
-  items: [
+const categorySchema = new mongoose.Schema({
+  formTitle: String,
+  categories: [
     {
-      item: {
-        type: String,
-        required: true,
-      },
-      options: [OptionSchema],
+      title: String,
+      items: [String],
     },
   ],
 });
 
-// Schema for cloze questions
-const ClozeQuestionSchema = new mongoose.Schema({
-  description:{
-    type: String,
-    required: true,
-  },
-  preview: {
-    type: String,
-    required: true,
-  },
-  options: [OptionSchema],
+const clozeQuestionSchema = new mongoose.Schema({
+  description: String,
+  preview: String,
+  options: [String],
 });
 
-const ComprehensionQuestionSchema = new mongoose.Schema({
-  queType: {
-    type: String,
-    required: true,
-  },
-  data: {
-    image: {
-      type: String,
-    },
-    questionText: {
-      type: String,
-    },
-    options: [OptionSchema],
-    points: {
-      type: Number,
-      required: true,
-    },
-  },
-});
-const TestSchema = new mongoose.Schema({
-  title: {
-    type: String,
-    required: true,
-  },
-  categories: [CategorySchema],
-  clozeQuestions: [ClozeQuestionSchema],
-  comprehensionQuestions: [ComprehensionQuestionSchema],
+const comprehensionQuestionSchema = new mongoose.Schema({
+  queType: String,
+  inputValue: String,
+  textType: String,
+  options: [String],
+  correctOptions: [Number],
+  points: Number,
+  text: String,
 });
 
-// Define and export your models
-const Test = mongoose.model('Test', TestSchema);
+const testSchema = new mongoose.Schema({
+  testName: {type:String,unique:true,required:true},
+  imageURL:String,
+  categories: [categorySchema],
+  clozeQuestions: [clozeQuestionSchema],
+  comprehensionQuestions: [[comprehensionQuestionSchema]],
+  SectionId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Section', // Reference to the 'Section' model
+  },
 
-module.exports = {
-  Test,
-};
+});
+
+mongoose.models ={}
+
+const TestModel = mongoose.model('Test', testSchema);
+
+module.exports = TestModel;

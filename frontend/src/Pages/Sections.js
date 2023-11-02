@@ -2,13 +2,13 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 
-
 const API_URL = process.env.REACT_APP_API_URL;
 
 const Sections = () => {
-  const [sections, setSections] = useState({});
+  const [sections, setSections] = useState([]);
   const [newSectionName, setNewSectionName] = useState('');
   const [newTestName, setNewTestName] = useState('');
+  const [TestDataFetched, setTestDataFetched] = useState(null);
   const [creatingTestInSectionId, setCreatingTestInSectionId] = useState(null);
   const navigate = useNavigate();
 
@@ -17,11 +17,20 @@ const Sections = () => {
       try {
         const response = await axios.get(`${API_URL}/api/sections`);
         if (response.status === 200) {
-          const sectionsData = response.data.reduce((acc, section) => {
-            acc[section._id] = section;
-            return acc;
-          }, {});
-          setSections(sectionsData);
+          setSections(response.data);
+        } else {
+          // Handle errors
+        }
+      } catch (error) {
+        // Handle errors
+      }
+    }
+
+    async function fetchTests() {
+      try {
+        const response = await axios.get(`${API_URL}/api/tests`);
+        if (response.status === 200) {
+          setTestDataFetched(response.data);
         } else {
           // Handle errors
         }
@@ -31,7 +40,15 @@ const Sections = () => {
     }
 
     fetchSections();
+    fetchTests();
   }, []);
+
+  function handleTakeTest(id){
+    navigate(`/test/${id}`)
+  }
+  function ViewAllResponses(){
+
+  }
 
   const handleCreateSection = async () => {
     try {
@@ -41,7 +58,7 @@ const Sections = () => {
 
       if (response.status === 200) {
         const newSection = response.data;
-        setSections({ ...sections, [newSection._id]: newSection });
+        setSections([...sections, newSection]);
         setNewSectionName('');
       } else {
         // Handle errors
@@ -51,10 +68,9 @@ const Sections = () => {
     }
   };
 
-  
   const handleCreateTest = (sectionId) => {
     if (creatingTestInSectionId === sectionId) {
-      navigate(`/test/${sectionId}`);
+      navigate(`/test/${newTestName}/${sectionId}`);
     } else {
       setCreatingTestInSectionId(sectionId);
     }
@@ -63,7 +79,7 @@ const Sections = () => {
   return (
     <div className="p-4">
       <h2 className="text-2xl font-bold mb-4">Sections</h2>
-      {Object.values(sections).map((section) => (
+      {sections.map((section) => (
         <div key={section._id} className="mb-4">
           <h3 className="text-xl font-semibold">{section.name}</h3>
           {creatingTestInSectionId === section._id ? (
@@ -90,14 +106,20 @@ const Sections = () => {
               {creatingTestInSectionId === section._id ? 'Edit Test' : 'Create Test'}
             </button>
           )}
-          {/* List existing tests */}
+          {/* List existing tests for this section */}
           <ul className="list-disc list-inside">
-            {section.tests &&
-              section.tests.map((test) => (
-                <li key={test._id} className="mb-2">
-                  {test.name}
-                </li>
-              ))}
+            {TestDataFetched &&
+              TestDataFetched
+                .filter((test) => test.SectionId === section._id)
+                .map((test) => (
+                  <li key={test._id} className="mb-2">
+                    {test.testName}
+                    <button onClick={()=>handleTakeTest(test._id)}>take test</button>
+                    <button onClick={()=>ViewAllResponses(test._id)}>Responses</button>
+
+                  </li>
+                  
+                ))}
           </ul>
         </div>
       ))}

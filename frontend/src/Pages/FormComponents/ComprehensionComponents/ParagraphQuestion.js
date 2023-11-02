@@ -1,12 +1,16 @@
 import React from 'react';
 
-const ParagraphQuestion = ({ question, onTextChange, onPointsChange, onDelete }) => {
+const ParagraphQuestion = ({ question, onTextChange, onPointsChange, onDelete,setQuestionText }) => {
+  function handleTextChange(e){
+    onTextChange(e.target.value)
+    setQuestionText(e.target.value)
+  }
   return (
     <div className="mb-4">
       <h3 className="text-lg font-bold mb-2">Paragraph Question</h3>
       <textarea
         value={question.text}
-        onChange={(e) => onTextChange(e.target.value)}
+        onChange={handleTextChange}
         className="w-full p-2 border rounded"
         placeholder="Enter the paragraph question text"
       ></textarea>

@@ -1,93 +1,76 @@
 import React, { useEffect, useState } from 'react';
 
-const CategoryBuilder = ({categories}) => {
-  const [, setCategories] = useState([]);
+const CategoryBuilder = ({ categories, setCategories, formTitle, setFormTitle, index, data, updateData }) => {
   const [newCategory, setNewCategory] = useState('');
   const [newItem, setNewItem] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('');
-  const [formTitle, setFormTitle] = useState('');
 
-  const [dataCategory, setDataCategory] = useState({ title: '', items: [] });
+  // Separate state for this CategoryBuilder instance
+  const [localCategories, setLocalCategories] = useState(categories);
+  const [localFormTitle, setLocalFormTitle] = useState(formTitle);
 
   useEffect(() => {
-    // Update dataCategory whenever formTitle or categories change
-    setDataCategory({
-      title: formTitle,
-      items: [...categories],
-    });
-  }, [formTitle, categories]);
+    updateData({ formTitle: localFormTitle, categories: localCategories });
+      // eslint-disable-next-line
+  }, [localFormTitle, localCategories]);
 
-  console.log(dataCategory);
+  const categoryState = localCategories[index] || { title: '', items: [] };
+      // eslint-disable-next-line
+  const { title: categoryTitle, items: categoryItems } = categoryState;
 
   const addCategory = () => {
     if (newCategory) {
-      setCategories([...categories, { title: newCategory, items: [] }]);
+      const updatedCategories = [...localCategories];
+      const newCategoryObject = { title: newCategory, items: [] };
+      updatedCategories.push(newCategoryObject);
+      setLocalCategories(updatedCategories);
       setNewCategory('');
     }
   };
 
+
   const addItem = () => {
     if (newItem && selectedCategory) {
-      const updatedCategories = categories.map((category) => {
-        if (category.title === selectedCategory) {
-          return {
-            ...category,
-            items: [...category.items, newItem],
-          };
-        }
-        return category;
-      });
+      const updatedCategories = [...localCategories];
+      const selectedCategoryIndex = updatedCategories.findIndex((cat) => cat.title === selectedCategory);
 
-      setCategories(updatedCategories);
-      setNewItem('');
+      if (selectedCategoryIndex !== -1) {
+        const updatedCategory = { ...updatedCategories[selectedCategoryIndex] };
+        updatedCategory.items.push(newItem);
+        updatedCategories[selectedCategoryIndex] = updatedCategory;
+        setLocalCategories(updatedCategories);
+        setNewItem('');
+      }
     }
   };
 
-  const editCategory = (categoryTitle, newTitle) => {
-    const updatedCategories = categories.map((category) => {
-      if (category.title === categoryTitle) {
-        return {
-          ...category,
-          title: newTitle,
-        };
-      }
-      return category;
-    });
 
-    setCategories(updatedCategories);
+  const editCategory = (newTitle) => {
+    const updatedCategories = [...localCategories];
+    updatedCategories[index] = { title: newTitle, items: categoryItems };
+    setLocalCategories(updatedCategories);
   };
 
-  const deleteCategory = (categoryTitle) => {
-    const updatedCategories = categories.filter((category) => category.title !== categoryTitle);
-    setCategories(updatedCategories);
+  const deleteCategory = () => {
+    const updatedCategories = [...localCategories];
+    updatedCategories.splice(index, 1);
+    setLocalCategories(updatedCategories);
   };
 
-  const editItem = (categoryTitle, oldItem, newItem) => {
-    const updatedCategories = categories.map((category) => {
-      if (category.title === categoryTitle) {
-        return {
-          ...category,
-          items: category.items.map((item) => (item === oldItem ? newItem : item)),
-        };
-      }
-      return category;
-    });
-
-    setCategories(updatedCategories);
+  const editItem = (itemIndex, newItemTitle) => {
+    const updatedCategories = [...localCategories];
+    const updatedCategory = { ...categoryState };
+    updatedCategory.items[itemIndex] = newItemTitle;
+    updatedCategories[index] = updatedCategory;
+    setLocalCategories(updatedCategories);
   };
 
-  const deleteItem = (categoryTitle, itemToDelete) => {
-    const updatedCategories = categories.map((category) => {
-      if (category.title === categoryTitle) {
-        return {
-          ...category,
-          items: category.items.filter((item) => item !== itemToDelete),
-        };
-      }
-      return category;
-    });
-
-    setCategories(updatedCategories);
+  const deleteItem = (itemIndex) => {
+    const updatedCategories = [...localCategories];
+    const updatedCategory = { ...categoryState };
+    updatedCategory.items.splice(itemIndex, 1);
+    updatedCategories[index] = updatedCategory;
+    setLocalCategories(updatedCategories);
   };
 
   return (
@@ -99,8 +82,8 @@ const CategoryBuilder = ({categories}) => {
         <input
           type="text"
           placeholder="Enter Form Title"
-          value={formTitle}
-          onChange={(e) => setFormTitle(e.target.value)}
+          value={localFormTitle}
+          onChange={(e) => setLocalFormTitle(e.target.value)}
           className="w-1/3 p-2 border rounded"
         />
       </div>
@@ -137,12 +120,14 @@ const CategoryBuilder = ({categories}) => {
             className="w-1/3 p-2 border rounded mx-4"
           >
             <option value="">Select Category</option>
-            {categories.map((category) => (
+            {localCategories.map((category) => (
               <option key={category.title} value={category.title}>
                 {category.title}
               </option>
             ))}
           </select>
+
+
           <button onClick={addItem} className="bg-blue-500 text-white py-2 px-4 rounded">
             Add Item
           </button>
@@ -151,27 +136,26 @@ const CategoryBuilder = ({categories}) => {
 
       <div>
         <h2 className="text-lg font-bold mb-2">Categories and Items</h2>
-        {categories.map((category) => (
-          <div key={category.title} className="mb-4">
+        {localCategories.map((category, categoryIndex) => (
+          <div key={categoryIndex} className="mb-4">
             <h3 className="text-xl font-bold">{category.title}</h3>
             <button
-              onClick={() => editCategory(category.title, prompt('Enter new category title', category.title))}
+              onClick={() => editCategory(prompt('Enter new category title', category.title))}
               className="text-blue-500 mr-2"
             >
               Edit Category
             </button>
-            <button onClick={() => deleteCategory(category.title)} className="text-red-500 mr-2">
+            <button onClick={() => deleteCategory(categoryIndex)} className="text-red-500 mr-2">
               Delete Category
             </button>
             <ul>
-              {category.items.map((item) => (
-                <li key={item} className="ml-4">
+              {category.items.map((item, itemIndex) => (
+                <li key={itemIndex} className="ml-4">
                   {item}
                   <button
                     onClick={() =>
                       editItem(
-                        category.title,
-                        item,
+                        itemIndex,
                         prompt('Enter new item title', item)
                       )
                     }
@@ -179,7 +163,7 @@ const CategoryBuilder = ({categories}) => {
                   >
                     Edit Item
                   </button>
-                  <button onClick={() => deleteItem(category.title, item)} className="text-red-500 ml-2">
+                  <button onClick={() => deleteItem(itemIndex)} className="text-red-500 ml-2">
                     Delete Item
                   </button>
                 </li>
@@ -187,6 +171,7 @@ const CategoryBuilder = ({categories}) => {
             </ul>
           </div>
         ))}
+
       </div>
     </div>
   );

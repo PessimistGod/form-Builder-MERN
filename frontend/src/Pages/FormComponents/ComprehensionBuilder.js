@@ -1,49 +1,80 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import MCQQuestion from './ComprehensionComponents/MCQQuestion';
 import ParagraphQuestion from './ComprehensionComponents/ParagraphQuestion';
 import MCAQuestion from './ComprehensionComponents/MCAQuestion';
 
-const ComprehensionBuilder = () => {
-  const [questions, setQuestions] = useState([]);
+const ComprehensionBuilder = ({
+  comprehensionData,
+  setComprehensionData,
+  comprehensionIndex,
+}) => {
+  const [localQuestions, setLocalQuestions] = useState([]);
   const [selectedOption, setSelectedOption] = useState('text');
   const [inputValue, setInputValue] = useState('');
+  const [questionText, setQuestionText] = useState('');
 
 
   const addQuestion = (queType) => {
     const newQuestion = {
       queType,
-      text: selectedOption === 'text' ? inputValue : '',
+      inputValue : inputValue,
+      textType: selectedOption,
+      text:questionText,
       options: [],
       correctOptions: [],
       points: 1,
     };
 
-    setQuestions([...questions, newQuestion]);
+    setLocalQuestions((prevQuestions) => [...prevQuestions, newQuestion]);
   };
-  
+console.log(inputValue)
+  useEffect(() => {
+    setComprehensionData((prevData) => {
+      const newData = [...prevData];
+      newData[comprehensionIndex] = localQuestions;
+      return newData;
+    });
+    // eslint-disable-next-line 
+  }, [localQuestions, comprehensionIndex]);
+
   const deleteQuestion = (index) => {
-    const updatedQuestions = [...questions];
-    updatedQuestions.splice(index, 1);
-    setQuestions(updatedQuestions);
+    setLocalQuestions((prevQuestions) => {
+      const updatedQuestions = [...prevQuestions];
+      updatedQuestions.splice(index, 1);
+      return updatedQuestions;
+    });
   };
 
   const updateMCQQuestion = (index, updatedQuestion) => {
-    const updatedQuestions = [...questions];
-    updatedQuestions[index] = updatedQuestion;
-    setQuestions(updatedQuestions);
+    setLocalQuestions((prevQuestions) => {
+      const updatedQuestions = [...prevQuestions];
+      updatedQuestions[index] = updatedQuestion;
+      return updatedQuestions;
+    });
   };
 
-  
+  const updateQuestionData = (index, updatedQuestion) => {
+    setLocalQuestions((prevQuestions) => {
+      const updatedQuestions = [...prevQuestions];
+      updatedQuestions[index] = updatedQuestion;
+      return updatedQuestions;
+    });
+  };
+
   const updateMCAQuestion = (index, updatedQuestion) => {
-    const updatedQuestions = [...questions];
-    updatedQuestions[index] = updatedQuestion;
-    setQuestions(updatedQuestions);
+    setLocalQuestions((prevQuestions) => {
+      const updatedQuestions = [...prevQuestions];
+      updatedQuestions[index] = updatedQuestion;
+      return updatedQuestions;
+    });
   };
 
   const updateParagraphQuestion = (index, updatedQuestion) => {
-    const updatedQuestions = [...questions];
-    updatedQuestions[index] = updatedQuestion;
-    setQuestions(updatedQuestions);
+    setLocalQuestions((prevQuestions) => {
+      const updatedQuestions = [...prevQuestions];
+      updatedQuestions[index] = updatedQuestion;
+      return updatedQuestions;
+    });
   };
 
   const handleOptionChange = (event) => {
@@ -84,6 +115,12 @@ const ComprehensionBuilder = () => {
             onChange={handleInputChange}
             className="w-full p-2 border rounded"
           />
+           <div className='rounded-full w-16'>
+        {inputValue && (
+          <img src={inputValue} alt='checking...' className="mt-2 rounded-lg object-contain"/>
+        )}
+      </div>
+
         </div>
       )}
       <div className="mt-4">
@@ -96,37 +133,40 @@ const ComprehensionBuilder = () => {
         <button onClick={() => addQuestion('Paragraph')} className="bg-blue-500 text-white py-2 px-4 rounded my-1">
           Add Paragraph Question
         </button>
-
       </div>
-      {questions.map((question, index) => (
+      {localQuestions.map((question, index) => (
         <div key={index} className="mb-8">
           {question.queType === 'MCQ' ? (
-        <MCQQuestion
-        question={question}
-        onTextChange={(text) => updateMCQQuestion(index, { ...question, text })}
-        onOptionChange={(value, optionIndex) => {
-          const updatedOptions = [...question.options];
-          updatedOptions[optionIndex] = value;
-          updateMCQQuestion(index, { ...question, options: updatedOptions });
-        }}
-        onCorrectOptionChange={(correctOption) => updateMCQQuestion(index, { ...question, correctOptions: [correctOption] })} // Use an array to store the selected correct option
-        onPointsChange={(points) => updateMCQQuestion(index, { ...question, points })}
-        onDelete={() => deleteQuestion(index)}
-        onAddOption={() => {
-          const updatedOptions = [...question.options, ''];
-          updateMCQQuestion(index, { ...question, options: updatedOptions });
-        }}
-        onDeleteOption={(optionIndex) => {
-          const updatedOptions = [...question.options];
-          updatedOptions.splice(optionIndex, 1);
-          updateMCQQuestion(index, { ...question, options: updatedOptions });
-        }}
-      />
-      
-
+            <MCQQuestion
+              question={question}
+              index={index}
+              setQuestionText={setQuestionText}
+              updateQuestionData={(data) => updateQuestionData(index, data)}
+              onTextChange={(text) => updateMCQQuestion(index, { ...question, text })}
+              onOptionChange={(value, optionIndex) => {
+                const updatedOptions = [...question.options];
+                updatedOptions[optionIndex] = value;
+                updateMCQQuestion(index, { ...question, options: updatedOptions });
+              }}
+              onCorrectOptionChange={(correctOption) => updateMCQQuestion(index, { ...question, correctOptions: [correctOption] })}
+              onPointsChange={(points) => updateMCQQuestion(index, { ...question, points })}
+              onDelete={() => deleteQuestion(index)}
+              onAddOption={() => {
+                const updatedOptions = [...question.options, ''];
+                updateMCQQuestion(index, { ...question, options: updatedOptions });
+              }}
+              onDeleteOption={(optionIndex) => {
+                const updatedOptions = [...question.options];
+                updatedOptions.splice(optionIndex, 1);
+                updateMCQQuestion(index, { ...question, options: updatedOptions });
+              }}
+            />
           ) : question.queType === 'MCA' ? (
             <MCAQuestion
               question={question}
+              index={index}
+              setQuestionText={setQuestionText}
+              updateQuestionData={(data) => updateQuestionData(index, data)}
               onTextChange={(text) => updateMCAQuestion(index, { ...question, text })}
               onOptionChange={(value, optionIndex) => {
                 const updatedOptions = [...question.options];
@@ -157,9 +197,12 @@ const ComprehensionBuilder = () => {
           ) : (
             <ParagraphQuestion
               question={question}
+              index={index}
+              setQuestionText={setQuestionText}
               onTextChange={(text) => updateParagraphQuestion(index, { ...question, text })}
               onPointsChange={(points) => updateParagraphQuestion(index, { ...question, points })}
               onDelete={() => deleteQuestion(index)}
+              updateQuestionData={(data) => updateQuestionData(index, data)}
             />
           )}
         </div>

@@ -1,15 +1,17 @@
 import React from 'react';
 
-const MCAQuestion = ({ question, onTextChange, onOptionChange, onCorrectOptionsChange, onPointsChange, onDelete, onAddOption, onDeleteOption }) => {
-
-
+const MCAQuestion = ({ question, onTextChange, onOptionChange, onCorrectOptionsChange, onPointsChange, onDelete, onAddOption, onDeleteOption,setQuestionText,index }) => {
+function handleTextChange(e){
+  onTextChange(e.target.value)
+  setQuestionText(e.target.value)
+}
   
   return (
     <div className="mb-4">
       <h3 className="text-lg font-bold mb-2">MCA Question</h3>
       <textarea
         value={question.text}
-        onChange={(e) => onTextChange(e.target.value)}
+        onChange={handleTextChange}
         className="w-full p-2 border rounded"
         placeholder="Enter the MCA question text"
       ></textarea>

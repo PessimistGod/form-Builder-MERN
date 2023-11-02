@@ -4,6 +4,7 @@ import AppLayout from './AppLayout';
 import Home from './Pages/Home';
 import Sections from './Pages/Sections';
 import CreateTest from './Pages/CreateTest';
+import TakeTest from './Pages/TakeTest';
 
 function App() {
   return (
@@ -13,7 +14,9 @@ function App() {
         <Route path="/" element={<AppLayout />}>
           <Route index element={<Home />} />
           <Route path='/sections' element={<Sections />} />
-          <Route path='/test/:testId' element={<CreateTest />} />
+          <Route path='/test/:testName/:SectionId' element={<CreateTest />} />
+          <Route path='/test/:testId' element={<TakeTest />} />
+
 
 
         </Route>
