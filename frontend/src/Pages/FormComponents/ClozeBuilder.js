@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { AiOutlineDelete } from 'react-icons/ai';
 
 const ClozeBuilder = ({clozeData,setClozeData,index }) => {
 
@@ -97,10 +98,10 @@ const ClozeBuilder = ({clozeData,setClozeData,index }) => {
       <h3 className="text-lg font-bold mb-2">Options</h3>
       <div>
         {options.map((option, index) => (
-          <div key={index} className="option border p-2 rounded mt-2">
+          <div key={index} className="option border p-2 rounded mt-2 flex items-center">
             {option}
-            <button onClick={() => handleDeleteOption(index)} className="ml-2 text-red-600">
-              Delete
+            <button onClick={() => handleDeleteOption(index)} className="mx-2 text-red-600 flex items-center">
+            <AiOutlineDelete /> Delete
             </button>
           </div>
         ))}

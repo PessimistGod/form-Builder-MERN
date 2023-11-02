@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { AiOutlineEdit,AiOutlineDelete } from 'react-icons/ai'
 
 const CategoryBuilder = ({ categories, setCategories, formTitle, setFormTitle, index, data, updateData }) => {
   const [newCategory, setNewCategory] = useState('');
@@ -137,20 +138,22 @@ const CategoryBuilder = ({ categories, setCategories, formTitle, setFormTitle, i
       <div>
         <h2 className="text-lg font-bold mb-2">Categories and Items</h2>
         {localCategories.map((category, categoryIndex) => (
-          <div key={categoryIndex} className="mb-4">
+          <div key={categoryIndex} className="mb-4 mx-2">
+            <div className='flex items-center'>
             <h3 className="text-xl font-bold">{category.title}</h3>
             <button
               onClick={() => editCategory(prompt('Enter new category title', category.title))}
-              className="text-blue-500 mr-2"
+              className="text-blue-500 mx-2 flex items-center"
             >
-              Edit Category
+              <AiOutlineEdit /> Edit
             </button>
-            <button onClick={() => deleteCategory(categoryIndex)} className="text-red-500 mr-2">
-              Delete Category
+            <button onClick={() => deleteCategory(categoryIndex)} className="text-red-500 mx-2 flex items-center">
+            <AiOutlineDelete /> Delete
             </button>
-            <ul>
+            </div>
+            <ul className='flex flex-col'>
               {category.items.map((item, itemIndex) => (
-                <li key={itemIndex} className="ml-4">
+                <li key={itemIndex} className="ml-4 flex">
                   {item}
                   <button
                     onClick={() =>
@@ -159,12 +162,12 @@ const CategoryBuilder = ({ categories, setCategories, formTitle, setFormTitle, i
                         prompt('Enter new item title', item)
                       )
                     }
-                    className="text-blue-500 ml-2"
+                    className="text-blue-500 ml-2 flex items-center"
                   >
-                    Edit Item
+                    <AiOutlineEdit /> Edit
                   </button>
-                  <button onClick={() => deleteItem(itemIndex)} className="text-red-500 ml-2">
-                    Delete Item
+                  <button onClick={() => deleteItem(itemIndex)} className="text-red-500 ml-2 flex items-center">
+                    <AiOutlineDelete /> Delete
                   </button>
                 </li>
               ))}

@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import axios from 'axios';
 
 const TakeTest = () => {
   const { testId } = useParams();
   const API_URL = process.env.REACT_APP_API_URL;
+
+  const navigate = useNavigate();
 
   const [testData, setTestData] = useState(null);
   const [userName, setUserName] = useState('')
@@ -196,12 +198,12 @@ const TakeTest = () => {
 
       if (response.status === 201) {
         console.log('Responses submitted successfully');
+        navigate('/')
       } else {
         console.log('Failed to submit responses');
       }
     } catch (error) {
       console.error('Error submitting responses:', error);
-      // Handle network or other errors
     }
   };
 

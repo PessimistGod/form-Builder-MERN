@@ -4,11 +4,12 @@ import CategoryBuilder from './FormComponents/CategoryBuilder';
 import ClozeQuestionBuilder from './FormComponents/ClozeBuilder';
 import ComprehensionQuestionBuilder from './FormComponents/ComprehensionBuilder';
 import axios from 'axios'
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
+import { AiOutlineDelete } from 'react-icons/ai';
 
 const CreateTest = () => {
   const { testName, SectionId } = useParams();
-  console.log(testName, SectionId)
+  const navigate = useNavigate();
   const API_URL = process.env.REACT_APP_API_URL;
   const [questions, setQuestions] = useState([]);
   const [addingQuestionType, setAddingQuestionType] = useState('category');
@@ -36,7 +37,9 @@ const CreateTest = () => {
       };
       
       const response = await axios.post(`${API_URL}/api/tests`, newFormData);
-
+      if(response.data){
+        navigate('/sections')
+      }
       console.log('Test created:', response.data);
     } catch (error) {
       console.error('Failed to create the test:', error);
@@ -205,8 +208,8 @@ const CreateTest = () => {
                       
                         )}
                       </div>
-                      <button onClick={() => removeQuestion(index)} className="text-red-600 mt-2">
-                        Remove Question
+                      <button onClick={() => removeQuestion(index)} className="text-red-600 mt-6 flex items-center ml-auto">
+                      <AiOutlineDelete size={35} /> Question
                       </button>
                     </li>
                   )}
